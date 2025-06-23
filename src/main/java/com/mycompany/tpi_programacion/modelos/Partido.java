@@ -8,7 +8,6 @@ public class Partido {
     private int puntajeEquipo2;
     private String equipoGanador;
     private String nombrePartido;
-    
 
     public Partido() {
     }

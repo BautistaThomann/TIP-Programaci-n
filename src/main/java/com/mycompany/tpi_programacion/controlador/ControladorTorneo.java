@@ -122,11 +122,12 @@ public class ControladorTorneo {
     }
 
     public void registrarResultados() {
+        // si o si tiene q haber partidos para continuar con el torneo
         if (partido1.isEmpty() && partido2.isEmpty() && partido3.isEmpty() && partido4.isEmpty()) {
             vista.mensaje("No hay partidos generados todavia");
             return;
         }
-
+        
         for (Partido p : partido1) {
             registrarResultadoSerie(p);
         }
@@ -147,22 +148,27 @@ public class ControladorTorneo {
         int victoriasEquipo1 = 0;
         int victoriasEquipo2 = 0;
         int nroPartido = 1;
-
+        
+        // si ninguno de los 2 llego a cuatro partidos ganados se ejecuta (condicion del while)
         while (victoriasEquipo1 < 4 && victoriasEquipo2 < 4) {
             vista.mensaje("Partido " + nroPartido + " de la serie: " + partido.getNombrePartido());
-
+            
+            // pide los puntos de los equipos
             int puntos1 = Integer.parseInt(vista.pedirDato("Puntaje de " + partido.getEquipo1().getNombre() + ":"));
             int puntos2 = Integer.parseInt(vista.pedirDato("Puntaje de " + partido.getEquipo2().getNombre() + ":"));
-
+            
+            // compara los ganadores y se suman a los partidos ganados
             if (puntos1 > puntos2) {
                 victoriasEquipo1++;
             } else {
                 victoriasEquipo2++;
             }
-
+            
+            // se suma el numero de partido (ya que es al mejor de 7)
             nroPartido++;
         }
-
+        
+        // hace la condicion del torneo que es al mejor de 7
         if (victoriasEquipo1 == 4) {
             partido.setEquipoGanador(partido.getEquipo1().getNombre());
         } else {
@@ -173,11 +179,12 @@ public class ControladorTorneo {
     }
 
     public void generarSemifinales() {
-        if (partido1.isEmpty() || partido2.isEmpty() || partido3.isEmpty() || partido4.isEmpty()) {
+        if (partido1.isEmpty() && partido2.isEmpty() && partido3.isEmpty() && partido4.isEmpty()) {
             vista.mensaje("Tenes que registrar resultados de los cuartos antes de generar semifinales");
             return;
         }
-
+        
+        // mete los ganadores de los cuartos a la semifinal
         Equipo ganadorEste1 = obtenerGanador(partido1);
         Equipo ganadorEste2 = obtenerGanador(partido2);
         semifinalEste.add(new Partido(ganadorEste1, ganadorEste2, "Semifinal Este"));
@@ -186,27 +193,35 @@ public class ControladorTorneo {
         Equipo ganadorOeste2 = obtenerGanador(partido4);
         semifinalOeste.add(new Partido(ganadorOeste1, ganadorOeste2, "Semifinal Oeste"));
 
+        // muestra como quedaron las semifinales
         vista.mensaje("Semifinales generadas correctamente!!");
         vista.mensaje("Semifinal Este: " + ganadorEste1.getNombre() + " VS " + ganadorEste2.getNombre());
         vista.mensaje("Semifinal Oeste: " + ganadorOeste1.getNombre() + " VS " + ganadorOeste2.getNombre());
 
     }
-
+    
+    // busca el ganador
     public Equipo obtenerGanador(List<Partido> lista) {
+        // chequea que la lista no este vacia
         if (!lista.isEmpty()) {
+            // obtiene el nombre del equipo ganador
             String nombreGanador = lista.get(0).getEquipoGanador();
+            
             if (nombreGanador.equals(lista.get(0).getEquipo1().getNombre())) {
+                // devuelve como ganador al equipo que este primero en la lista
                 return lista.get(0).getEquipo1();
             } else {
+                // devuelve como ganador al equipo que este segundo en la lista
                 return lista.get(0).getEquipo2();
             }
         }
+        // y si la lista esta vacia devuelve null (no hay ganador)
         return null;
 
     }
 
     public void registrarResultadosSemifinales() {
-        if (semifinalEste.isEmpty() || semifinalOeste.isEmpty()) {
+        if (semifinalEste.isEmpty() && semifinalOeste.isEmpty()) {
             vista.mensaje("No se han generado las semifinales todavia");
             return;
         }
@@ -223,7 +238,7 @@ public class ControladorTorneo {
     }
 
     public void generarFinalTorneo() {
-        if (semifinalEste.isEmpty() || semifinalOeste.isEmpty()) {
+        if (semifinalEste.isEmpty() && semifinalOeste.isEmpty()) {
             vista.mensaje("Primero tenes que jugar las semifinales para seguir con el torneo");
             return;
         }
@@ -233,7 +248,8 @@ public class ControladorTorneo {
 
         Partido finalPartido = new Partido(finalistaEste, finalistaOeste, "Final del Torneo");
         finalTorneo.add(finalPartido);
-
+        
+        // genera la final del torneo
         vista.mensaje("Final del torneo generada!!");
         vista.mensaje("Se enfrentan: " + finalistaEste.getNombre() + " VS " + finalistaOeste.getNombre());
     }
@@ -243,7 +259,8 @@ public class ControladorTorneo {
             vista.mensaje("La final no se genero");
             return;
         }
-
+        
+        // muestra el ganador del torneo
         vista.mensaje("Registrando resultado de la gran final:");
 
         Partido finalPartido = finalTorneo.get(0);
