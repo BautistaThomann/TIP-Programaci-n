@@ -17,6 +17,14 @@ public class Equipo {
         this.partidosPerdidos = partidosPerdidos;
     }
 
+    public int getPartidosGanados() {
+        return partidosGanados;
+    }
+
+    public int getPartidosPerdidos() {
+        return partidosPerdidos;
+    }
+
     public int getId() {
         return id;
     }
@@ -33,13 +41,6 @@ public class Equipo {
         return conferencia;
     }
 
-    public int getPartidosGanados() {
-        return partidosGanados;
-    }
-
-    public int getPartidosPerdidos() {
-        return partidosPerdidos;
-    }
 
     public void setId(int id) {
         this.id = id;
@@ -69,4 +70,7 @@ public class Equipo {
     public String toString() {
         return "Equipo{" + "id=" + id + ", nombre=" + nombre + ", cantidadJugadores=" + cantidadJugadores + ", conferencia=" + conferencia + ", partidosGanados=" + partidosGanados + ", partidosPerdidos=" + partidosPerdidos + '}';
     }
+
+    
+    
 }
