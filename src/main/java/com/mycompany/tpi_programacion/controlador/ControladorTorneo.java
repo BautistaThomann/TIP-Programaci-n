@@ -179,7 +179,7 @@ public class ControladorTorneo {
     }
 
     public void generarSemifinales() {
-        if (partido1.isEmpty() && partido2.isEmpty() && partido3.isEmpty() && partido4.isEmpty()) {
+        if (partido1.isEmpty() || partido2.isEmpty() || partido3.isEmpty() || partido4.isEmpty()) {
             vista.mensaje("Tenes que registrar resultados de los cuartos antes de generar semifinales");
             return;
         }
@@ -221,7 +221,7 @@ public class ControladorTorneo {
     }
 
     public void registrarResultadosSemifinales() {
-        if (semifinalEste.isEmpty() && semifinalOeste.isEmpty()) {
+        if (semifinalEste.isEmpty() || semifinalOeste.isEmpty()) {
             vista.mensaje("No se han generado las semifinales todavia");
             return;
         }
@@ -238,7 +238,7 @@ public class ControladorTorneo {
     }
 
     public void generarFinalTorneo() {
-        if (semifinalEste.isEmpty() && semifinalOeste.isEmpty()) {
+        if (semifinalEste.isEmpty() || semifinalOeste.isEmpty()) {
             vista.mensaje("Primero tenes que jugar las semifinales para seguir con el torneo");
             return;
         }
@@ -248,8 +248,7 @@ public class ControladorTorneo {
 
         Partido finalPartido = new Partido(finalistaEste, finalistaOeste, "Final del Torneo");
         finalTorneo.add(finalPartido);
-        
-        // genera la final del torneo
+
         vista.mensaje("Final del torneo generada!!");
         vista.mensaje("Se enfrentan: " + finalistaEste.getNombre() + " VS " + finalistaOeste.getNombre());
     }
