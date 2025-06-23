@@ -1,5 +1,8 @@
 package com.mycompany.tpi_programacion.controlador;
 
+import com.mycompany.tpi_programacion.dao.EquipoDAO;
+import com.mycompany.tpi_programacion.dao.PartidoDAO;
+import java.sql.SQLException;
 import com.mycompany.tpi_programacion.modelos.Administrador;
 import com.mycompany.tpi_programacion.modelos.Equipo;
 import com.mycompany.tpi_programacion.modelos.Partido;
@@ -21,7 +24,11 @@ public class ControladorTorneo {
     List<Partido> semifinalOeste = new ArrayList<>();
     List<Partido> finalTorneo = new ArrayList<>();
 
+    EquipoDAO equipoDAO = new EquipoDAO();
+    PartidoDAO partidoDAO = new PartidoDAO();
+
     public void ejecutarMenu() {
+        cargarEquiposDesdeBase();
 
         int opcion = 0;
 
@@ -53,15 +60,30 @@ public class ControladorTorneo {
 
     }
 
+    public void cargarEquiposDesdeBase() {
+        try {
+            equipos = equipoDAO.obtenerTodos();
+            vista.mensaje("Equipos cargados desde la base.");
+        } catch (SQLException e) {
+            vista.mensaje("Error al cargar equipos desde la base: " + e.getMessage());
+        }
+    }
+
     public void registrarEquipo() {
         int id = Integer.parseInt(vista.pedirDato("Ingrese el id del equipo: "));
         String nombreEquipo = vista.pedirDato("Ingrese el nombre del equipo").toUpperCase();
         int cantidadJugadores = Integer.parseInt(vista.pedirDato("Ingrese la cantidad de jugadores: "));
         String conferencia = vista.pedirDato("Ingrese la conferencia a la que pertenece el equipo: ");
+
         Equipo equipo = new Equipo(id, nombreEquipo, cantidadJugadores, conferencia, 0, 0);
         equipos.add(equipo);
-        System.out.println("Equipo registrado!");
 
+        try {
+            equipoDAO.guardar(equipo);
+            vista.mensaje("Equipo registrado y guardado en la base");
+        } catch (SQLException e) {
+            vista.mensaje("Error al guardar equipo en la base: " + e.getMessage());
+        }
     }
 
     public void registrarAdministrador() {
@@ -111,6 +133,15 @@ public class ControladorTorneo {
         partido3.add(p3);
         partido4.add(p4);
 
+        try {
+            partidoDAO.guardar(p1, "cuartos");
+            partidoDAO.guardar(p2, "cuartos");
+            partidoDAO.guardar(p3, "cuartos");
+            partidoDAO.guardar(p4, "cuartos");
+        } catch (Exception e) {
+            vista.mensaje("Error al guardar partidos en la base: " + e.getMessage());
+        }
+
         vista.mensaje("Los Playoff se han iniciado correctamente");
         vista.mensaje("Cruces: ");
         vista.mensaje("==========================================");
@@ -127,7 +158,7 @@ public class ControladorTorneo {
             vista.mensaje("No hay partidos generados todavia");
             return;
         }
-        
+
         for (Partido p : partido1) {
             registrarResultadoSerie(p);
         }
@@ -144,30 +175,30 @@ public class ControladorTorneo {
     }
 
     public void registrarResultadoSerie(Partido partido) {
-        
+
         int victoriasEquipo1 = 0;
         int victoriasEquipo2 = 0;
         int nroPartido = 1;
-        
+
         // si ninguno de los 2 llego a cuatro partidos ganados se ejecuta (condicion del while)
         while (victoriasEquipo1 < 4 && victoriasEquipo2 < 4) {
             vista.mensaje("Partido " + nroPartido + " de la serie: " + partido.getNombrePartido());
-            
+
             // pide los puntos de los equipos
             int puntos1 = Integer.parseInt(vista.pedirDato("Puntaje de " + partido.getEquipo1().getNombre() + ":"));
             int puntos2 = Integer.parseInt(vista.pedirDato("Puntaje de " + partido.getEquipo2().getNombre() + ":"));
-            
+
             // compara los ganadores y se suman a los partidos ganados
             if (puntos1 > puntos2) {
                 victoriasEquipo1++;
             } else {
                 victoriasEquipo2++;
             }
-            
+
             // se suma el numero de partido (ya que es al mejor de 7)
             nroPartido++;
         }
-        
+
         // hace la condicion del torneo que es al mejor de 7
         if (victoriasEquipo1 == 4) {
             partido.setEquipoGanador(partido.getEquipo1().getNombre());
@@ -176,6 +207,12 @@ public class ControladorTorneo {
         }
 
         vista.mensaje("Ganador de la serie: " + partido.getEquipoGanador());
+
+        try {
+            partidoDAO.actualizarResultado(partido);
+        } catch (Exception e) {
+            vista.mensaje("Error al actualizar resultado en la base: " + e.getMessage());
+        }
     }
 
     public void generarSemifinales() {
@@ -183,7 +220,7 @@ public class ControladorTorneo {
             vista.mensaje("Tenes que registrar resultados de los cuartos antes de generar semifinales");
             return;
         }
-        
+
         // mete los ganadores de los cuartos a la semifinal
         Equipo ganadorEste1 = obtenerGanador(partido1);
         Equipo ganadorEste2 = obtenerGanador(partido2);
@@ -193,20 +230,27 @@ public class ControladorTorneo {
         Equipo ganadorOeste2 = obtenerGanador(partido4);
         semifinalOeste.add(new Partido(ganadorOeste1, ganadorOeste2, "Semifinal Oeste"));
 
+        try {
+            partidoDAO.guardar(semifinalEste.get(0), "semis_este");
+            partidoDAO.guardar(semifinalOeste.get(0), "semis_oeste");
+        } catch (Exception e) {
+            vista.mensaje("Error al guardar las semifinales en la base: " + e.getMessage());
+        }
+
         // muestra como quedaron las semifinales
         vista.mensaje("Semifinales generadas correctamente!!");
         vista.mensaje("Semifinal Este: " + ganadorEste1.getNombre() + " VS " + ganadorEste2.getNombre());
         vista.mensaje("Semifinal Oeste: " + ganadorOeste1.getNombre() + " VS " + ganadorOeste2.getNombre());
 
     }
-    
+
     // busca el ganador
     public Equipo obtenerGanador(List<Partido> lista) {
         // chequea que la lista no este vacia
         if (!lista.isEmpty()) {
             // obtiene el nombre del equipo ganador
             String nombreGanador = lista.get(0).getEquipoGanador();
-            
+
             if (nombreGanador.equals(lista.get(0).getEquipo1().getNombre())) {
                 // devuelve como ganador al equipo que este primero en la lista
                 return lista.get(0).getEquipo1();
@@ -249,6 +293,12 @@ public class ControladorTorneo {
         Partido finalPartido = new Partido(finalistaEste, finalistaOeste, "Final del Torneo");
         finalTorneo.add(finalPartido);
 
+        try {
+            partidoDAO.guardar(finalPartido, "final");
+        } catch (Exception e) {
+            vista.mensaje("Error al guardar la final en la base: " + e.getMessage());
+        }
+
         vista.mensaje("Final del torneo generada!!");
         vista.mensaje("Se enfrentan: " + finalistaEste.getNombre() + " VS " + finalistaOeste.getNombre());
     }
@@ -258,7 +308,7 @@ public class ControladorTorneo {
             vista.mensaje("La final no se genero");
             return;
         }
-        
+
         // muestra el ganador del torneo
         vista.mensaje("Registrando resultado de la gran final:");
 
@@ -268,7 +318,7 @@ public class ControladorTorneo {
         vista.mensaje("EL CAMPEON DE LOS PLAYOFF ES: " + finalPartido.getEquipoGanador() + "!!");
         vista.mensaje("===========================================");
         vista.mensaje("===============¡FELICIDADES!================");
-        
+
     }
 
 }
