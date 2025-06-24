@@ -8,15 +8,14 @@ public class PartidoDAO {
 
     public int guardar(Partido partido, String fase) throws SQLException {
         String sql = """
-            INSERT INTO partidos (equipo1, equipo2, puntaje_equipo1, puntaje_equipo2, equipo_ganador, nombre_partido, fase)
+            INSERT INTO partidos (equipo1_id, equipo2_id, puntaje_equipo1, puntaje_equipo2, equipo_ganador, nombre_partido, fase)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """;
 
-        try (Connection c = ConexionDB.getConexion();
-             PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection c = ConexionDB.getConexion(); PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setString(1, partido.getEquipo1().getNombre());
-            ps.setString(2, partido.getEquipo2().getNombre());
+            ps.setInt(1, partido.getEquipo1().getId());
+            ps.setInt(2, partido.getEquipo2().getId());
             ps.setInt(3, partido.getPuntajeEquipo1());
             ps.setInt(4, partido.getPuntajeEquipo2());
             ps.setString(5, partido.getEquipoGanador());
@@ -43,8 +42,7 @@ public class PartidoDAO {
             WHERE id = ?
         """;
 
-        try (Connection c = ConexionDB.getConexion();
-             PreparedStatement ps = c.prepareStatement(sql)) {
+        try (Connection c = ConexionDB.getConexion(); PreparedStatement ps = c.prepareStatement(sql)) {
 
             ps.setInt(1, partido.getPuntajeEquipo1());
             ps.setInt(2, partido.getPuntajeEquipo2());
