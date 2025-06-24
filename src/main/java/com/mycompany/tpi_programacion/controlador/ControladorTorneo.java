@@ -1,5 +1,7 @@
 package com.mycompany.tpi_programacion.controlador;
 
+import java.util.HashMap;
+import java.util.Map;
 import com.mycompany.tpi_programacion.dao.EquipoDAO;
 import com.mycompany.tpi_programacion.dao.PartidoDAO;
 import java.sql.SQLException;
@@ -23,6 +25,7 @@ public class ControladorTorneo {
     List<Partido> semifinalEste = new ArrayList<>();
     List<Partido> semifinalOeste = new ArrayList<>();
     List<Partido> finalTorneo = new ArrayList<>();
+    Map<String, Equipo> mapaEquiposPorNombre = new HashMap<>();
 
     EquipoDAO equipoDAO = new EquipoDAO();
     PartidoDAO partidoDAO = new PartidoDAO();
@@ -63,6 +66,10 @@ public class ControladorTorneo {
     public void cargarEquiposDesdeBase() {
         try {
             equipos = equipoDAO.obtenerTodos();
+            mapaEquiposPorNombre.clear();
+            for (Equipo e : equipos) {
+                mapaEquiposPorNombre.put(e.getNombre(), e);
+            }
             vista.mensaje("Equipos cargados desde la base.");
         } catch (SQLException e) {
             vista.mensaje("Error al cargar equipos desde la base: " + e.getMessage());
@@ -72,11 +79,18 @@ public class ControladorTorneo {
     public void registrarEquipo() {
         int id = Integer.parseInt(vista.pedirDato("Ingrese el id del equipo: "));
         String nombreEquipo = vista.pedirDato("Ingrese el nombre del equipo").toUpperCase();
+
+        if (mapaEquiposPorNombre.containsKey(nombreEquipo)) {
+            vista.mensaje("El equipo ya existe. No se puede volver a registrar.");
+            return;
+        }
+
         int cantidadJugadores = Integer.parseInt(vista.pedirDato("Ingrese la cantidad de jugadores: "));
         String conferencia = vista.pedirDato("Ingrese la conferencia a la que pertenece el equipo: ");
 
         Equipo equipo = new Equipo(id, nombreEquipo, cantidadJugadores, conferencia, 0, 0);
         equipos.add(equipo);
+        mapaEquiposPorNombre.put(nombreEquipo, equipo);
 
         try {
             equipoDAO.guardar(equipo);
@@ -104,40 +118,37 @@ public class ControladorTorneo {
 
         for (Equipo e : equipos) {
             if (e.getConferencia().equalsIgnoreCase("Este")) {
-                este.add(e);
+                este.add(mapaEquiposPorNombre.get(e.getNombre()));
             } else if (e.getConferencia().equalsIgnoreCase("Oeste")) {
-                oeste.add(e);
+                oeste.add(mapaEquiposPorNombre.get(e.getNombre()));
             }
         }
 
         if (este.size() == 4 && oeste.size() == 4) {
-            // sigue con el torneo, por que si o si tienen que ser 4 equipos por conferencia
+            // OK
         } else {
             vista.mensaje("Debe ingresar al menos 4 equipos por conferencia");
             return;
         }
 
-        // hacemos el sorteo de los equipos
         Collections.shuffle(este);
         Collections.shuffle(oeste);
 
         Partido p1 = new Partido(este.get(0), este.get(1), "Partido Este 1");
         Partido p2 = new Partido(este.get(2), este.get(3), "Partido Este 2");
-
         partido1.add(p1);
         partido2.add(p2);
 
         Partido p3 = new Partido(oeste.get(0), oeste.get(1), "Partido Oeste 1");
         Partido p4 = new Partido(oeste.get(2), oeste.get(3), "Partido Oeste 2");
-
         partido3.add(p3);
         partido4.add(p4);
 
         try {
-            p1.setId(partidoDAO.guardar(p1, "cuartos"));
-            p2.setId(partidoDAO.guardar(p2, "cuartos"));
-            p3.setId(partidoDAO.guardar(p3, "cuartos"));
-            p4.setId(partidoDAO.guardar(p4, "cuartos"));
+            partidoDAO.guardar(p1, "cuartos");
+            partidoDAO.guardar(p2, "cuartos");
+            partidoDAO.guardar(p3, "cuartos");
+            partidoDAO.guardar(p4, "cuartos");
         } catch (Exception e) {
             vista.mensaje("Error al guardar partidos en la base: " + e.getMessage());
         }
@@ -149,7 +160,6 @@ public class ControladorTorneo {
         vista.mensaje("Partido Este 2 " + este.get(2).getNombre() + " VS " + este.get(3).getNombre());
         vista.mensaje("Partido Oeste 3 " + oeste.get(0).getNombre() + " VS " + oeste.get(1).getNombre());
         vista.mensaje("Partido Oeste 4 " + oeste.get(2).getNombre() + " VS " + oeste.get(3).getNombre());
-
     }
 
     public void registrarResultados() {
