@@ -134,10 +134,10 @@ public class ControladorTorneo {
         partido4.add(p4);
 
         try {
-            partidoDAO.guardar(p1, "cuartos");
-            partidoDAO.guardar(p2, "cuartos");
-            partidoDAO.guardar(p3, "cuartos");
-            partidoDAO.guardar(p4, "cuartos");
+            p1.setId(partidoDAO.guardar(p1, "cuartos"));
+            p2.setId(partidoDAO.guardar(p2, "cuartos"));
+            p3.setId(partidoDAO.guardar(p3, "cuartos"));
+            p4.setId(partidoDAO.guardar(p4, "cuartos"));
         } catch (Exception e) {
             vista.mensaje("Error al guardar partidos en la base: " + e.getMessage());
         }
