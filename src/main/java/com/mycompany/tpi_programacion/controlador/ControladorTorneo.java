@@ -125,7 +125,7 @@ public class ControladorTorneo {
         }
 
         if (este.size() == 4 && oeste.size() == 4) {
-            // OK
+          
         } else {
             vista.mensaje("Debe ingresar al menos 4 equipos por conferencia");
             return;
@@ -332,3 +332,5 @@ public class ControladorTorneo {
     }
 
 }
+
+
